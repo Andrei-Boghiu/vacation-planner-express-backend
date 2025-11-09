@@ -1,0 +1,30 @@
+# Node modules
+node_modules/
+temp/
+# Environment variables
+.env
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Prisma
+prisma/dev.db
+prisma/dev.db-journal
+
+# will have many migrations during development, thus I ignore migrations for now
+src/prisma/migrations 
+
+# OS-specific
+.DS_Store
+Thumbs.db
+
+# VSCode
+.vscode/
+
+# Output
+dist/
+build/

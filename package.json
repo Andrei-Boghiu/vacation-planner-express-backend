@@ -1,0 +1,52 @@
+{
+  "name": "vacation-planner-express",
+  "version": "0.0.1",
+  "description": "Vacation planner for managing the available workforce.",
+  "type": "commonjs",
+  "main": "build/index.js",
+  "keywords": [
+    "TypeScript",
+    "ExpressJS",
+    "PassportJS",
+    "Prisma"
+  ],
+  "license": "ISC",
+  "author": {
+    "name": "Andrei Boghiu",
+    "url": "https://github.com/Andrei-Boghiu"
+  },
+  "repository": {
+    "type": "github",
+    "url": ""
+  },
+  "scripts": {
+    "dev": "nodemon",
+    "build": "tsc",
+    "start": "node build/index.js",
+    "prisma:dev": "npx prisma migrate reset --force && npx prisma migrate dev --name auto && npx prisma generate",
+    "prisma:prod": "npx prisma generate && npx prisma migrate deploy"
+  },
+  "dependencies": {
+    "@prisma/client": "^6.18.0",
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.3",
+    "express": "^5.1.0",
+    "express-rate-limit": "^8.1.0",
+    "express-session": "^1.18.2",
+    "helmet": "^8.1.0",
+    "jsonwebtoken": "^9.0.2",
+    "passport": "^0.7.0",
+    "zod": "^4.1.12"
+  },
+  "devDependencies": {
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.5",
+    "@types/express-session": "^1.18.2",
+    "@types/jsonwebtoken": "^9.0.10",
+    "@types/passport": "^1.0.17",
+    "nodemon": "^3.1.10",
+    "prisma": "^6.18.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.3"
+  }
+}
