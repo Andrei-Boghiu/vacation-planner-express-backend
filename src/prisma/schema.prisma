@@ -62,7 +62,8 @@ model AuditLog {
 }
 
 model Session {
-    sid       String    @id
+    id        String   @id
+    sid       String   @unique
     data      String
-    expiresAt DateTime?
+    expiresAt DateTime
 }

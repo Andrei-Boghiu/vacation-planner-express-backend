@@ -1,9 +1,13 @@
 import { SessionOptions } from "express-session";
 import { IS_PROD, SESSION_SECRET } from "./env.config";
-import { PrismaSessionStore } from "../session/PrismaSessionStore";
+import { PrismaSessionStore } from "@quixo3/prisma-session-store";
+import prisma from "../prisma/prisma.client";
 
 const SESSION_OPTIONS: SessionOptions = {
-  store: new PrismaSessionStore(),
+  store: new PrismaSessionStore(prisma, {
+    checkPeriod: 2 * 60 * 1000,
+    dbRecordIdIsSessionId: true,
+  }),
   secret: SESSION_SECRET,
   saveUninitialized: false,
   resave: false,
