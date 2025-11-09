@@ -1,60 +1,52 @@
 import express from "express";
-import helmet from "helmet";
+import cookieParser from "cookie-parser";
 import session from "express-session";
 import passport from "passport";
-import jwt from "jsonwebtoken";
+import helmet from "helmet";
+import cors from "cors";
+import prisma from "./prisma/prisma.client";
+
+import { COOKIE_SECRET, DISCORD_AUTH_PATH, DISCORD_CALLBACK_PATH, SUCCESS_AUTH_REDIRECT } from "./configs/env.config";
+import CORS_OPTIONS from "./configs/cors.config";
+import { isAuthenticated } from "./middleware/auth.middleware";
+import SESSION_OPTIONS from "./configs/session.config";
 
 const app = express();
 
 // Middleware
 app.use(helmet());
 app.use(express.json());
-app.use(session({ secret: "change_this_secret", resave: false, saveUninitialized: false }));
+app.use(cors(CORS_OPTIONS));
+app.use(cookieParser(COOKIE_SECRET));
+app.use(session(SESSION_OPTIONS));
+
 app.use(passport.initialize());
 app.use(passport.session());
 
-// Passport Bitbucket OAuth Strategy
-passport.serializeUser((user, done) => done(null, user));
-passport.deserializeUser((obj: any, done) => done(null, obj));
-
-passport.use();
-
-// 1️⃣ Bitbucket OAuth endpoints
-app.get("/auth/bitbucket", passport.authenticate("bitbucket"));
-
-app.get(
-  "/auth/bitbucket/callback",
-  passport.authenticate("bitbucket", { failureRedirect: "/login-failed" }),
-  (req, res) => {
-    // On successful login, issue JWT
-    const token = jwt.sign({ username: req.user?.profile.username }, process.env.JWT_SECRET || "change_this_secret", {
-      expiresIn: "1h",
-    });
-    res.json({ token });
-  }
-);
-
-// 2️⃣ Public endpoint
 app.get("/health", (req, res) => {
   res.json({ status: "UP" });
 });
 
-// JWT middleware
-function authenticateToken(req: any, res: any, next: any) {
-  const authHeader = req.headers["authorization"];
-  const token = authHeader && authHeader.split(" ")[1];
-  if (!token) return res.sendStatus(401);
+app.get(DISCORD_AUTH_PATH, passport.authenticate("discord"));
 
-  jwt.verify(token, process.env.JWT_SECRET || "change_this_secret", (err: any, user: any) => {
-    if (err) return res.sendStatus(403);
-    req.user = user;
-    next();
-  });
-}
+app.get(DISCORD_CALLBACK_PATH, passport.authenticate("discord"), (_, response) => {
+  response.redirect(SUCCESS_AUTH_REDIRECT);
+});
 
-// 3️⃣ Private endpoint
-app.get("/private", authenticateToken, (req, res) => {
-  res.json({ data: "private data" });
+app.get("/public", (req, res) => {
+  res.json({ data: "public data" });
+});
+
+app.use(isAuthenticated);
+
+app.get("/private", (req, res) => {
+  res.json({ data: "private data", user: req.user });
+});
+
+app.get("/api/users", async (req, res) => {
+  const data = await prisma.user.findMany();
+
+  res.send(data);
 });
 
 export default app;

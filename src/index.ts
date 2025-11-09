@@ -1,4 +1,5 @@
 import "dotenv/config";
+import "./auth/discord.strategy";
 import app from "./server";
 import getLocalIp from "./utils/getLocalIp.util";
 import { PORT } from "./configs/env.config";
