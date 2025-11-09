@@ -7,7 +7,7 @@ const SESSION_OPTIONS: SessionOptions = {
   resave: false,
   cookie: {
     maxAge: 60_000 * 60 * 8, // 8h
-    httpOnly: IS_PROD,
+    httpOnly: true,
     secure: IS_PROD,
   },
 };

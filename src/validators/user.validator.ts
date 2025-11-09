@@ -13,7 +13,7 @@ export const userSchema = z
   .strict();
 
 export const updateUserSchema = userSchema
-  .omit({ discordId: true, email: true })
+  .omit({ discordId: true, email: true, role: true })
   .partial()
   .refine((data) => Object.keys(data).length > 0, {
     message: "At least one field must be provided",
