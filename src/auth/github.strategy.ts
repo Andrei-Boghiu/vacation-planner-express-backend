@@ -1,7 +1,7 @@
-import { BASE_URL, DISCORD_CLIENT_ID, DISCORD_CLIENT_SECRET } from "../configs/env.config";
+import { BASE_URL, GITHUB_CLIENT_ID, GITHUB_CLIENT_SECRET } from "../configs/env.config";
 import prisma from "../prisma/prisma.client";
 import passport from "passport";
-import { Strategy } from "passport-discord";
+import { Strategy } from "passport-github2";
 import { User } from "@prisma/client";
 
 passport.serializeUser((user, done) => {
@@ -20,24 +20,24 @@ passport.deserializeUser(async (id: User["id"], done) => {
 export default passport.use(
   new Strategy(
     {
-      clientID: DISCORD_CLIENT_ID,
-      clientSecret: DISCORD_CLIENT_SECRET,
-      callbackURL: `${BASE_URL}/api/auth/discord/callback`,
-      scope: ["identify", "email"],
+      clientID: GITHUB_CLIENT_ID,
+      clientSecret: GITHUB_CLIENT_SECRET,
+      callbackURL: `${BASE_URL}/api/auth/github/callback`,
+      scope: ["user:email"],
     },
-    async (accessToken, refreshToken, profile, done) => {
-      const discordId = profile.id;
-      const email = profile.email as string;
+    async (accessToken: any, refreshToken: any, profile: any, done: (err: any, user: any) => any) => {
+      const githubId = profile.id;
+      const email: string = profile.email || profile.emails[0].value;
       let user: User | null;
 
-      if (!discordId || !email) {
-        return done("Error: discord didn't provided the required information: email and id", undefined);
+      if (!githubId || !email) {
+        return done("Error: github didn't provided the required information: email and id", undefined);
       }
 
       try {
         user = await prisma.user.findFirst({
           where: {
-            OR: [{ email }, { discordId }],
+            OR: [{ email }, { githubId }],
           },
         });
       } catch (error) {
@@ -46,7 +46,7 @@ export default passport.use(
 
       if (!user) {
         try {
-          user = await prisma.user.create({ data: { email, discordId } });
+          user = await prisma.user.create({ data: { email, githubId } });
         } catch (error) {
           return done(error, undefined);
         }

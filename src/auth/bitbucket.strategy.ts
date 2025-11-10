@@ -1,7 +1,9 @@
-import { BASE_URL, DISCORD_CLIENT_ID, DISCORD_CLIENT_SECRET } from "../configs/env.config";
+import { BASE_URL, BITBUCKET_CLIENT_ID, BITBUCKET_CLIENT_SECRET } from "../configs/env.config";
 import prisma from "../prisma/prisma.client";
 import passport from "passport";
-import { Strategy } from "passport-discord";
+
+// @ts-ignore
+import { Strategy } from "passport-bitbucket-oauth20";
 import { User } from "@prisma/client";
 
 passport.serializeUser((user, done) => {
@@ -20,24 +22,24 @@ passport.deserializeUser(async (id: User["id"], done) => {
 export default passport.use(
   new Strategy(
     {
-      clientID: DISCORD_CLIENT_ID,
-      clientSecret: DISCORD_CLIENT_SECRET,
-      callbackURL: `${BASE_URL}/api/auth/discord/callback`,
-      scope: ["identify", "email"],
+      clientID: BITBUCKET_CLIENT_ID,
+      clientSecret: BITBUCKET_CLIENT_SECRET,
+      callbackURL: `${BASE_URL}/api/auth/bitbucket/callback`,
     },
-    async (accessToken, refreshToken, profile, done) => {
-      const discordId = profile.id;
-      const email = profile.email as string;
+    async (accessToken: any, refreshToken: any, profile: any, done: (err: any, user: any) => any) => {
+      const bitbucketId = profile.id || profile.uuid;
+      const email = profile.emails.find((obj: any) => obj.primary)?.value;
+
       let user: User | null;
 
-      if (!discordId || !email) {
-        return done("Error: discord didn't provided the required information: email and id", undefined);
+      if (!bitbucketId || !email) {
+        return done("Error: bitbucket didn't provided the required information: email and/or id", undefined);
       }
 
       try {
         user = await prisma.user.findFirst({
           where: {
-            OR: [{ email }, { discordId }],
+            OR: [{ email }, { bitbucketId }],
           },
         });
       } catch (error) {
@@ -46,7 +48,7 @@ export default passport.use(
 
       if (!user) {
         try {
-          user = await prisma.user.create({ data: { email, discordId } });
+          user = await prisma.user.create({ data: { email, bitbucketId } });
         } catch (error) {
           return done(error, undefined);
         }

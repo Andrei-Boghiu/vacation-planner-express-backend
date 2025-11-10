@@ -1,5 +1,8 @@
 import "dotenv/config";
 import "./auth/discord.strategy";
+import "./auth/bitbucket.strategy";
+import "./auth/github.strategy";
+import "./auth/google.strategy";
 import app from "./server";
 import getLocalIp from "./utils/getLocalIp.util";
 import { PORT } from "./configs/env.config";

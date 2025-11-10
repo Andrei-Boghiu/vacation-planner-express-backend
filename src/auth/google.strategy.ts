@@ -1,7 +1,7 @@
-import { BASE_URL, DISCORD_CLIENT_ID, DISCORD_CLIENT_SECRET } from "../configs/env.config";
+import { BASE_URL, GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET } from "../configs/env.config";
 import prisma from "../prisma/prisma.client";
 import passport from "passport";
-import { Strategy } from "passport-discord";
+import { Strategy } from "passport-google-oauth20";
 import { User } from "@prisma/client";
 
 passport.serializeUser((user, done) => {
@@ -20,24 +20,24 @@ passport.deserializeUser(async (id: User["id"], done) => {
 export default passport.use(
   new Strategy(
     {
-      clientID: DISCORD_CLIENT_ID,
-      clientSecret: DISCORD_CLIENT_SECRET,
-      callbackURL: `${BASE_URL}/api/auth/discord/callback`,
-      scope: ["identify", "email"],
+      clientID: GOOGLE_CLIENT_ID,
+      clientSecret: GOOGLE_CLIENT_SECRET,
+      callbackURL: `${BASE_URL}/api/auth/google/callback`,
+      scope: ["profile", "email"],
     },
     async (accessToken, refreshToken, profile, done) => {
-      const discordId = profile.id;
-      const email = profile.email as string;
+      const googleId = profile.id;
+      const email = profile._json.email as string;
       let user: User | null;
 
-      if (!discordId || !email) {
-        return done("Error: discord didn't provided the required information: email and id", undefined);
+      if (!googleId) {
+        return done("Error: google didn't provided the required information: email and id", undefined);
       }
 
       try {
         user = await prisma.user.findFirst({
           where: {
-            OR: [{ email }, { discordId }],
+            OR: [{ email }, { googleId }],
           },
         });
       } catch (error) {
@@ -46,7 +46,7 @@ export default passport.use(
 
       if (!user) {
         try {
-          user = await prisma.user.create({ data: { email, discordId } });
+          user = await prisma.user.create({ data: { email, googleId } });
         } catch (error) {
           return done(error, undefined);
         }

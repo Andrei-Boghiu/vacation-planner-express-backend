@@ -23,7 +23,10 @@ enum VacationStatus {
 
 model User {
     id               String            @id @default(cuid(2))
-    discordId        String            @unique
+    discordId        String?           @unique
+    bitbucketId      String?           @unique
+    githubId         String?           @unique
+    googleId         String?           @unique
     email            String            @unique
     firstName        String?
     lastName         String?
